@@ -1,2 +1,2 @@
-# Data_Mining
+# Data Mining
 Study data mining use cases and use the python programming language
