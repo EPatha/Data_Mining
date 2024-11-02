@@ -3,7 +3,7 @@
 This project involves the following steps:
 
 1. **Dataset Acquisition**: 
-   - Taking a private raw dataset from ([https://Chess.com](https://www.chess.com)).
+   - Taking a private raw dataset from [Chess.com](https://www.chess.com).
 
 2. **Conversion to PGN**: 
    - Converting the dataset to PGN format using [openingtree.com](https://openingtree.com).
