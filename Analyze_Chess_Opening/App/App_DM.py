@@ -29,7 +29,7 @@ def process_pgn_file(pgn_file_path, color):
     return pd.DataFrame(games_data)
 
 def analyze_win_rate(df):
-    """Calculate win rates for openings based on the first two moves."""
+    """Calculate win rates for openings based on the first two moves and create Most Used Openings summary."""
     df['First_Two_Moves'] = df['Moves'].apply(lambda x: ' '.join(x.split()[:2]))
     df['White_Result'] = df['Result'].map({'1-0': 1, '0-1': 0, '1/2-1/2': 0.5})
     df['Black_Result'] = df['Result'].map({'1-0': 0, '0-1': 1, '1/2-1/2': 0.5})
@@ -44,16 +44,26 @@ def analyze_win_rate(df):
         black_win_rate=('Black_Result', 'mean')
     ).reset_index()
 
+    # Merge white and black results
     win_rate = pd.merge(white_win_rate, black_win_rate, on='First_Two_Moves', how='outer').fillna(0)
-    win_rate.columns = ['Opening Move', 'Total Games White', 'Win Rate White', 'Total Games Black', 'Win Rate Black']
-    return win_rate
+    win_rate['Total Games'] = win_rate['total_games_white'] + win_rate['total_games_black']
+
+    win_rate.columns = ['Opening Move', 'Total Games White', 'Win Rate White', 
+                        'Total Games Black', 'Win Rate Black', 'Total Games']
+
+    # Create Most Used Openings DataFrame
+    most_used_openings = win_rate[win_rate['Total Games'] > 20].sort_values(by='Total Games', ascending=False)
+
+    return win_rate, most_used_openings
+
+
 
 # GUI Application class
 class PGNAnalyzerApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Chess PGN Analyzer")
-        self.root.geometry("600x400")
+        self.root.geometry("800x600")
 
         # File paths
         self.white_pgn_file = None
@@ -67,6 +77,10 @@ class PGNAnalyzerApp:
         Button(root, text="Select Black PGN File", command=self.select_black_pgn).pack(pady=5)
         Button(root, text="Analyze", command=self.analyze).pack(pady=10)
         Button(root, text="Save to Excel", command=self.save_to_excel).pack(pady=5)
+
+        # Treeview for analysis result
+        self.tree = Treeview(root, show='headings')
+        self.tree.pack(fill='both', expand=True, pady=10)
 
     def select_white_pgn(self):
         self.white_pgn_file = filedialog.askopenfilename(filetypes=[("PGN files", "*.pgn")])
@@ -89,31 +103,41 @@ class PGNAnalyzerApp:
 
         # Combine and analyze
         df_combined = pd.concat([df_white, df_black])
-        self.win_rate_df = analyze_win_rate(df_combined)
+        self.win_rate_df, self.most_used_openings_df = analyze_win_rate(df_combined)
 
-        # Display result in new window
+        # Display results
         self.display_results()
 
     def display_results(self):
         if self.win_rate_df is None:
             return
 
-        # Create a new window
+        # Display overall win rate
+        self.display_treeview(self.win_rate_df, "Overall Win Rate")
+
+        # Display most used openings
+        if hasattr(self, 'most_used_openings_df'):
+            self.display_treeview(self.most_used_openings_df, "Most Used Openings")
+
+    def display_treeview(self, df, title):
+        # Create new window for displaying results
         result_window = Toplevel(self.root)
-        result_window.title("Win Rate Analysis")
+        result_window.title(title)
         result_window.geometry("800x400")
 
-        tree = Treeview(result_window, columns=self.win_rate_df.columns, show='headings')
-        tree.pack(fill='both', expand=True)
+        tree = Treeview(result_window, show='headings')
+        tree.pack(fill='both', expand=True, pady=10)
 
         # Set column headings
-        for col in self.win_rate_df.columns:
+        tree['columns'] = list(df.columns)
+        for col in df.columns:
             tree.heading(col, text=col)
             tree.column(col, width=100)
 
         # Add rows
-        for _, row in self.win_rate_df.iterrows():
+        for _, row in df.iterrows():
             tree.insert('', 'end', values=list(row))
+
 
     def save_to_excel(self):
         if self.win_rate_df is None:
