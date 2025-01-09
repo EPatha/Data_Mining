@@ -9,11 +9,15 @@ class ChessAnalysisApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Chess Opening Analyzer")
-        self.root.geometry("800x600")
+        self.root.geometry("800x1500")
 
         # Font settings
         title_font = font.Font(family="Helvetica", size=16, weight="bold")
         section_font = font.Font(family="Helvetica", size=12, weight="bold")
+
+        # Close button
+        self.close_button = tk.Button(root, text="X", command=self.root.quit, bg="red", fg="white", font=section_font)
+        self.close_button.place(relx=1.0, rely=0.0, anchor="ne")
 
         # Section for White PGN
         self.white_frame = ttk.LabelFrame(root, text="White PGN", padding=10)
@@ -22,7 +26,7 @@ class ChessAnalysisApp:
         self.white_pgn_label = tk.Label(self.white_frame, text="File: None", font=section_font)
         self.white_pgn_label.pack(side=tk.LEFT, padx=10, pady=5)
 
-        self.white_pgn_button = tk.Button(self.white_frame, text="Select PGN", command=self.select_white_pgn)
+        self.white_pgn_button = tk.Button(self.white_frame, text="Select PGN", command=self.select_white_pgn, width=10)
         self.white_pgn_button.pack(side=tk.RIGHT, padx=10, pady=5)
 
         # Section for Black PGN
@@ -32,7 +36,7 @@ class ChessAnalysisApp:
         self.black_pgn_label = tk.Label(self.black_frame, text="File: None", font=section_font)
         self.black_pgn_label.pack(side=tk.LEFT, padx=10, pady=5)
 
-        self.black_pgn_button = tk.Button(self.black_frame, text="Select PGN", command=self.select_black_pgn)
+        self.black_pgn_button = tk.Button(self.black_frame, text="Select PGN", command=self.select_black_pgn, width=10)
         self.black_pgn_button.pack(side=tk.RIGHT, padx=10, pady=5)
 
         # Section for File Conversion
