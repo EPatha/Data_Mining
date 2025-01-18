@@ -31,9 +31,8 @@ graph TD;
     A[Mulai] --> B[Memuat File PGN]
     B --> C[Mengurai Permainan Catur]
     C --> D[Menghitung Win Rate]
-    D --> E[Menampilkan Hasil Analisis]
-    E --> F[Memberikan Rekomendasi Pembukaan]
-    F --> G[Selesai]
+    D --> E[Menampilkan Hasil Evaluasi Analisis]
+    E --> F[Selesai]
 ```
 
 ## 3. Penjelasan Dataset, EDA dan Proses Features Dataset
