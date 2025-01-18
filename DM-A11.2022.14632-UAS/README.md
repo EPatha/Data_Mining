@@ -1,4 +1,4 @@
-# Chess Analyzer
+# 1. Chess Analyzer
 
 Chess Analyzer adalah aplikasi GUI yang memungkinkan pengguna untuk menganalisis permainan catur dan mengidentifikasi kelemahan pada fase pembukaan. Aplikasi ini dibangun menggunakan Tkinter untuk GUI dan menggunakan pustaka `chess.pgn` untuk memparsing file PGN (Portable Game Notation).
 
@@ -8,6 +8,74 @@ Chess Analyzer adalah aplikasi GUI yang memungkinkan pengguna untuk menganalisis
 - **Analisis Pembukaan**: Menghitung win rate untuk setiap pembukaan berdasarkan warna.
 - **Evaluasi Pembukaan**: Menampilkan pembukaan yang perlu dipelajari berdasarkan win rate terendah.
 - **Tampilan GUI**: Antarmuka pengguna grafis yang intuitif dan mudah digunakan.
+Berikut adalah contoh penulisan dalam format Markdown untuk menjelaskan poin-poin yang Anda sebutkan:
+
+## 2. Ringkasan dan Permasalahan Project
+
+### Ringkasan
+Chess Analyzer adalah aplikasi yang dirancang untuk membantu pemain catur menganalisis permainan mereka dan mengidentifikasi kelemahan pada fase pembukaan. Aplikasi ini menggunakan file PGN (Portable Game Notation) untuk menganalisis permainan catur dan menghitung win rate untuk setiap pembukaan berdasarkan warna.
+
+### Permasalahan
+Permasalahan utama yang ingin diselesaikan oleh proyek ini adalah:
+- Biaya yang cukup mahal untuk aplikasi analisis berbayar sekitar 600k/tahun.
+
+### Tujuan yang Akan Dicapai
+Tujuan dari proyek ini adalah:
+- Menghemat biaya.
+
+### Model / Alur Penyelesaian
+Berikut adalah bagan alur penyelesaian proyek:
+
+```mermaid
+graph TD;
+    A[Mulai] --> B[Memuat File PGN]
+    B --> C[Mengurai Permainan Catur]
+    C --> D[Menghitung Win Rate]
+    D --> E[Menampilkan Hasil Analisis]
+    E --> F[Memberikan Rekomendasi Pembukaan]
+    F --> G[Selesai]
+```
+
+## 3. Penjelasan Dataset, EDA dan Proses Features Dataset
+
+### Penjelasan Dataset
+Dataset yang digunakan dalam proyek ini adalah file PGN yang berisi catatan permainan catur. File PGN dapat diunduh dari berbagai sumber seperti lichess.com atau chess.com. Dataset ini berisi informasi tentang gerakan catur dan hasil permainan.
+
+### Exploratory Data Analysis (EDA)
+EDA dilakukan untuk memahami struktur dan karakteristik dataset. Langkah-langkah EDA meliputi:
+- Memuat file PGN dan mengurai permainan catur.
+- Menghitung jumlah permainan untuk setiap pembukaan.
+- Menghitung win rate untuk setiap pembukaan berdasarkan warna.
+
+### Proses Features Dataset
+Proses features dataset meliputi:
+- Mengurai permainan catur menjadi daftar gerakan dan hasil.
+- Mengelompokkan permainan berdasarkan pembukaan.
+- Menghitung jumlah permainan dan win rate untuk setiap pembukaan.
+
+## 4. Proses Learning / Modeling
+
+Proses learning atau modeling dalam proyek ini meliputi:
+- Memuat file PGN dan mengurai permainan catur.
+- Menghitung win rate untuk setiap pembukaan berdasarkan warna.
+- Menampilkan hasil analisis dalam bentuk tabel.
+- Memberikan rekomendasi pembukaan yang perlu dipelajari lebih lanjut berdasarkan win rate terendah.
+
+## 5. Performa Model
+
+Performa model diukur berdasarkan kemampuan aplikasi untuk:
+- Memuat dan mengurai file PGN dengan benar.
+- Menghitung win rate untuk setiap pembukaan dengan akurat.
+- Menampilkan hasil analisis dalam bentuk yang mudah dipahami oleh pengguna.
+- Memberikan rekomendasi pembukaan yang relevan berdasarkan win rate.
+
+## 6. Diskusi Hasil dan Kesimpulan
+
+### Diskusi Hasil
+Hasil analisis menunjukkan bahwa aplikasi Chess Analyzer dapat membantu pemain catur mengidentifikasi kelemahan pada fase pembukaan. Aplikasi ini berhasil menghitung win rate untuk setiap pembukaan dan memberikan rekomendasi pembukaan yang perlu dipelajari lebih lanjut.
+
+### Kesimpulan
+Proyek Chess Analyzer berhasil mencapai tujuan yang ditetapkan. Aplikasi ini dapat memuat file PGN, menganalisis permainan catur, menghitung win rate untuk setiap pembukaan, dan memberikan rekomendasi pembukaan yang perlu dipelajari lebih lanjut. Aplikasi ini dapat digunakan oleh pemain catur untuk meningkatkan permainan mereka dengan fokus pada pembukaan yang memiliki win rate terendah.
 
 ## Library yang Digunakan
 
