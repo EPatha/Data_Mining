@@ -2,7 +2,6 @@ import streamlit as st
 import chess.pgn
 import pandas as pd
 import os
-import webbrowser
 import io
 
 def load_pgn(uploaded_file):
@@ -41,6 +40,13 @@ def compute_win_rates(data, color):
 def main():
     st.title("Chess Analyzer for Search your Weakness Opening")
 
+    st.markdown(
+        """
+        Dataset berada di link ini, download dulu di link Google Drive tersebut:
+        [Google Drive Dataset](https://drive.google.com/drive/folders/1_FWcpYO7noxe5gpb_DLPTKnc2PVimuzu?usp=sharing)
+        """
+    )
+
     st.sidebar.title("Options")
     tutorial_button = st.sidebar.button("Tutorial")
     if tutorial_button:
@@ -59,10 +65,6 @@ def main():
             "6. Hasil evaluasi akan menunjukkan pembukaan yang perlu Anda pelajari lebih lanjut berdasarkan win rate.\n"
         )
         st.info(tutorial_text)
-
-    dataset_button = st.sidebar.button("Dataset (Google Drive)")
-    if dataset_button:
-        webbrowser.open("https://drive.google.com/drive/folders/1_FWcpYO7noxe5gpb_DLPTKnc2PVimuzu?usp=sharing")
 
     white_pgn_file = st.sidebar.file_uploader("Select White PGN file", type=["pgn"])
     black_pgn_file = st.sidebar.file_uploader("Select Black PGN file", type=["pgn"])
