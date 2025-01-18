@@ -1,3 +1,20 @@
+## Fitur Utama
+
+- **Memuat File PGN**: Pengguna dapat memuat file PGN untuk permainan catur putih dan hitam.
+- **Analisis Pembukaan**: Menghitung win rate untuk setiap pembukaan berdasarkan warna.
+- **Evaluasi Pembukaan**: Menampilkan pembukaan yang perlu dipelajari berdasarkan win rate terendah.
+- **Tampilan GUI**: Antarmuka pengguna grafis yang intuitif dan mudah digunakan.
+
+## Library yang Digunakan
+
+- `tkinter`: Untuk membuat antarmuka pengguna grafis (GUI).
+- `tkinter.filedialog`: Untuk operasi dialog file.
+- `tkinter.messagebox`: Untuk menampilkan kotak pesan.
+- `tkinter.ttk`: Untuk widget bertema.
+- `chess.pgn`: Untuk memparsing file PGN (Portable Game Notation).
+- `pandas`: Untuk manipulasi dan analisis data.
+- `webbrowser`: Untuk membuka URL di peramban web.
+  
 ## Pra-pemrosesan Dataset
 1. Ambil langkah-langkah permainan (moves), hasil permainan (result), dan warna pemain (hitam/putih).
 2. Pastikan jumlah dataset minimal ada 30 permainan di setiap langkahnya untuk analisis yang optimal.
