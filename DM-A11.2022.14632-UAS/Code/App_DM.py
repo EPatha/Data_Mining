@@ -39,13 +39,6 @@ class ChessAnalysisApp:
         self.black_pgn_button = tk.Button(self.black_frame, text="Select PGN", command=self.select_black_pgn, width=10)
         self.black_pgn_button.pack(side=tk.RIGHT, padx=10, pady=5)
 
-        # Section for File Conversion
-        self.convert_frame = ttk.LabelFrame(root, text="File Conversion", padding=10)
-        self.convert_frame.pack(fill=tk.X, padx=10, pady=5)
-
-        self.convert_button = tk.Button(self.convert_frame, text="Convert File to TXT", command=self.convert_file_to_txt)
-        self.convert_button.pack(side=tk.LEFT, padx=5, pady=5)
-
         # Action buttons
         self.action_frame = ttk.Frame(root, padding=10)
         self.action_frame.pack(fill=tk.X, padx=10, pady=5)
@@ -84,29 +77,6 @@ class ChessAnalysisApp:
         self.black_pgn_path = filedialog.askopenfilename(filetypes=[("PGN files", "*.pgn")])
         if self.black_pgn_path:
             self.black_pgn_label.config(text=f"File: {self.black_pgn_path}")
-
-    def convert_file_to_txt(self):
-        file_path = filedialog.askopenfilename(filetypes=[("All Files", "*.*")])
-        if not file_path:
-            return
-
-        file_extension = os.path.splitext(file_path)[-1].lower()
-        if file_extension not in [".pdf", ".torrent", ".docx", ".pgn"]:
-            messagebox.showerror("Error", "Unsupported file type.")
-            return
-
-        output_path = filedialog.asksaveasfilename(defaultextension=".txt", filetypes=[("Text files", "*.txt")])
-        if not output_path:
-            return
-
-        try:
-            with open(file_path, "r") as infile, open(output_path, "w") as outfile:
-                content = infile.read()
-                outfile.write(content)
-
-            messagebox.showinfo("Success", f"File converted to {output_path}")
-        except Exception as e:
-            messagebox.showerror("Error", f"Failed to convert file: {e}")
 
     def analyze(self):
         if not self.white_pgn_path or not self.black_pgn_path:
