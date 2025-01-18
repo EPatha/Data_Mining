@@ -21,6 +21,82 @@ Chess Analyzer adalah aplikasi GUI yang memungkinkan pengguna untuk menganalisis
 
 ## Proses Kerja
 
+
+## Pengambilan Dataset
+1. Anda bisa mendapatkan file PGN pribadi atau orang lain dari situs seperti lichess.com atau chess.com.
+2. Pergi ke situs openingtree.com dan masukkan nickname Anda untuk menganalisis permainan Anda.
+3. Setelah analisis selesai, unduh file PGN dari situs tersebut).
+
+GUI memberikan akses dataset yang dapat diambil dari Google Drive dengan mengklik tombol "Dataset(Google Drive)" di GUI. Ini akan membuka URL Google Drive di peramban web.
+
+```python
+def show_datasets(self):
+    webbrowser.open("https://drive.google.com/drive/folders/1_FWcpYO7noxe5gpb_DLPTKnc2PVimuzu?usp=sharing")
+```
+
+## Pra-pemrosesan Dataset
+1. Ambil langkah-langkah permainan (moves), hasil permainan (result), dan warna pemain (hitam/putih).
+2. Pastikan jumlah dataset minimal ada 30 permainan di setiap langkahnya untuk analisis yang optimal.
+3. Proses langkah-langkah permainan dengan mengambil 2 langkah awal untuk dijadikan variabel.
+4. Jadikan hasil permainan sebagai variabel.
+5. Buat win rate dengan menghitung semua kemenangan saat memegang putih dan kemenangan saat memegang hitam.
+6. Pisahkan warna hitam dan putih karena mereka adalah kategori yang berbeda.
+
+## Evaluasi
+Hasil evaluasi adalah win rate terendah dari kategori putih dan hitam. Win rate terendah menunjukkan pembukaan yang perlu dipelajari lebih lanjut agar permainan menjadi semakin baik.
+
+### Langkah-langkah Membuat Evaluasi:
+1. **Analisis Permainan**: Aplikasi akan menganalisis permainan catur dari file PGN yang dipilih.
+2. **Menghitung Win Rate**: Win rate dihitung berdasarkan jumlah kemenangan dari setiap pembukaan.
+3. **Memisahkan Kategori**: Hasil analisis dipisahkan berdasarkan kategori putih dan hitam.
+4. **Menentukan Win Rate Terendah**: Dari hasil analisis, win rate terendah dari masing-masing kategori diidentifikasi.
+5. **Menampilkan Hasil Evaluasi**: Hasil evaluasi ditampilkan, menunjukkan pembukaan yang perlu dipelajari lebih lanjut.
+
+```python
+def display_results(self):
+    for row in self.tree_white.get_children():
+        self.tree_white.delete(row)
+
+    for row in self.tree_black.get_children():
+        self.tree_black.delete(row)
+
+    for _, row in self.white_analysis.iterrows():
+        self.tree_white.insert("", tk.END, values=(row["Opening"], row["Games"], row["Win Rate (%)"]))
+
+    for _, row in self.black_analysis.iterrows():
+        self.tree_black.insert("", tk.END, values=(row["Opening"], row["Games"], row["Win Rate (%)"]))
+
+    # Display evaluation
+    white_least_winrate = self.white_analysis.loc[self.white_analysis["Win Rate (%)"].idxmin()]
+    black_least_winrate = self.black_analysis.loc[self.black_analysis["Win Rate (%)"].idxmin()]
+
+    evaluation_text = (
+        f"\n\nHasil Evaluasi:\n"
+        f"Pembukaan Putih yang perlu dipelajari = {white_least_winrate['Opening']} "
+        f"(Win Rate: {white_least_winrate['Win Rate (%)']:.2f}%)\n"
+        f"Pembukaan Hitam yang perlu dipelajari = {black_least_winrate['Opening']} "
+        f"(Win Rate: {black_least_winrate['Win Rate (%)']:.2f}%)"
+    )
+    messagebox.showinfo("Hasil Evaluasi", evaluation_text)
+```
+
+```python
+def load_pgn(self, pgn_path):
+    games = []
+    with open(pgn_path) as pgn_file:
+        while True:
+            game = chess.pgn.read_game(pgn_file)
+            if game is None:
+                break
+            moves = [move.uci() for move in game.mainline_moves()]
+            result = game.headers["Result"]
+            games.append({"Moves": moves, "Result": result})
+    return games
+```
+
+---
+
+
 ### 1. Inisialisasi GUI
 
 Aplikasi dimulai dengan inisialisasi GUI menggunakan Tkinter. Kelas `ChessAnalyzerApp` dibuat untuk mengatur semua komponen GUI.
@@ -168,39 +244,9 @@ def compute_win_rates(self, data, color):
     return pd.DataFrame(analysis)
 ```
 
-### 6. Menampilkan Hasil
 
-Metode `display_results` digunakan untuk menampilkan hasil analisis dalam bentuk tabel dan menampilkan evaluasi pembukaan yang perlu dipelajari.
 
-```python
-def display_results(self):
-    for row in self.tree_white.get_children():
-        self.tree_white.delete(row)
-
-    for row in self.tree_black.get_children():
-        self.tree_black.delete(row)
-
-    for _, row in self.white_analysis.iterrows():
-        self.tree_white.insert("", tk.END, values=(row["Opening"], row["Games"], row["Win Rate (%)"]))
-
-    for _, row in self.black_analysis.iterrows():
-        self.tree_black.insert("", tk.END, values=(row["Opening"], row["Games"], row["Win Rate (%)"]))
-
-    # Display evaluation
-    white_least_winrate = self.white_analysis.loc[self.white_analysis["Win Rate (%)"].idxmin()]
-    black_least_winrate = self.black_analysis.loc[self.black_analysis["Win Rate (%)"].idxmin()]
-
-    evaluation_text = (
-        f"\n\nHasil Evaluasi:\n"
-        f"Pembukaan Putih yang perlu dipelajari = {white_least_winrate['Opening']} "
-        f"(Win Rate: {white_least_winrate['Win Rate (%)']:.2f}%)\n"
-        f"Pembukaan Hitam yang perlu dipelajari = {black_least_winrate['Opening']} "
-        f"(Win Rate: {black_least_winrate['Win Rate (%)']:.2f}%)"
-    )
-    messagebox.showinfo("Hasil Evaluasi", evaluation_text)
-```
-
-### 7. Menjalankan Aplikasi
+### 6. Menjalankan Aplikasi
 
 Aplikasi GUI dijalankan dengan memanggil `mainloop` dari Tkinter.
 
@@ -210,34 +256,3 @@ if __name__ == "__main__":
     app = ChessAnalyzerApp(root)
     root.mainloop()
 ```
-
-## Pengambilan Dataset
-
-Dataset dapat diambil dari Google Drive dengan mengklik tombol "Dataset(Google Drive)" di GUI. Ini akan membuka URL Google Drive di peramban web.
-
-```python
-def show_datasets(self):
-    webbrowser.open("https://drive.google.com/drive/folders/1_FWcpYO7noxe5gpb_DLPTKnc2PVimuzu?usp=sharing")
-```
-
-## Pra-pemrosesan Data
-
-Pra-pemrosesan data dilakukan dengan memuat file PGN dan mengurai permainan catur menjadi daftar gerakan dan hasil. Data ini kemudian digunakan untuk menghitung win rate untuk setiap pembukaan.
-
-```python
-def load_pgn(self, pgn_path):
-    games = []
-    with open(pgn_path) as pgn_file:
-        while True:
-            game = chess.pgn.read_game(pgn_file)
-            if game is None:
-                break
-            moves = [move.uci() for move in game.mainline_moves()]
-            result = game.headers["Result"]
-            games.append({"Moves": moves, "Result": result})
-    return games
-```
-
----
-
-Anda dapat menyalin penjelasan ini ke README.md di GitHub Anda.
