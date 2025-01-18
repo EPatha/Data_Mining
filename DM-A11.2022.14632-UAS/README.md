@@ -1,7 +1,3 @@
-Berikut adalah penjelasan rinci dan detail tentang GUI Chess Analyzer, proses kerja dari awal hingga akhir, pengambilan dataset, dan pra-pemrosesan data yang dapat Anda salin ke README.md di GitHub Anda:
-
----
-
 # Chess Analyzer
 
 Chess Analyzer adalah aplikasi GUI yang memungkinkan pengguna untuk menganalisis permainan catur dan mengidentifikasi kelemahan pada fase pembukaan. Aplikasi ini dibangun menggunakan Tkinter untuk GUI dan menggunakan pustaka `chess.pgn` untuk memparsing file PGN (Portable Game Notation).
