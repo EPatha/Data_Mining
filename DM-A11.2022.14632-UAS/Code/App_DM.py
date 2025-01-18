@@ -1,191 +1,193 @@
 import tkinter as tk
-from tkinter import filedialog, ttk, messagebox
+from tkinter import filedialog, messagebox, ttk
 import chess.pgn
 import pandas as pd
-from tkinter import font
 import os
+import webbrowser
 
-class ChessAnalysisApp:
+class ChessAnalyzerApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("Chess Opening Analyzer")
-        self.root.geometry("800x1500")
+        self.root.title("Chess Analyzer")
 
-        # Font settings
-        title_font = font.Font(family="Helvetica", size=16, weight="bold")
-        section_font = font.Font(family="Helvetica", size=12, weight="bold")
+        self.dataset_dir = "datasets"
+        os.makedirs(self.dataset_dir, exist_ok=True)
 
-        # Close button
-        self.close_button = tk.Button(root, text="X", command=self.root.quit, bg="red", fg="white", font=section_font)
-        self.close_button.place(relx=1.0, rely=0.0, anchor="ne")
+        self.create_widgets()
 
-        # Section for White PGN
-        self.white_frame = ttk.LabelFrame(root, text="White PGN", padding=10)
-        self.white_frame.pack(fill=tk.X, padx=10, pady=5)
+    def create_widgets(self):
+        # Create a frame for the title with a dark background
+        title_frame = tk.Frame(self.root, bg="darkblue")
+        title_frame.pack(fill=tk.X)
 
-        self.white_pgn_label = tk.Label(self.white_frame, text="File: None", font=section_font)
-        self.white_pgn_label.pack(side=tk.LEFT, padx=10, pady=5)
+        title_label = tk.Label(title_frame, text="Chess Analyzer for Search your Weakness Opening", font=("Times New Rowman", 20, "bold"), fg="white", bg="darkblue")
+        title_label.pack(pady=10)
 
-        self.white_pgn_button = tk.Button(self.white_frame, text="Select PGN", command=self.select_white_pgn, width=10)
-        self.white_pgn_button.pack(side=tk.RIGHT, padx=10, pady=5)
+        # Create a frame for the buttons
+        button_frame = tk.Frame(self.root, bg="lightgray")
+        button_frame.pack(fill=tk.X, pady=10)
 
-        # Section for Black PGN
-        self.black_frame = ttk.LabelFrame(root, text="Black PGN", padding=10)
-        self.black_frame.pack(fill=tk.X, padx=10, pady=5)
+        tutorial_button = tk.Button(button_frame, text="Tutorial", command=self.show_tutorial, width=20, bg="lightgreen")
+        tutorial_button.pack(side=tk.LEFT, pady=5, padx=10)
+        dataset_button = tk.Button(button_frame, text="Dataset (Google Drive)", command=self.open_dataset_link, width=20)
+        dataset_button.pack(side=tk.LEFT, pady=5, padx=10)
+        analyze_button = tk.Button(button_frame, text="Analyze", command=self.analyze, width=20)
+        analyze_button.pack(side=tk.LEFT, pady=5, padx=10)
 
-        self.black_pgn_label = tk.Label(self.black_frame, text="File: None", font=section_font)
-        self.black_pgn_label.pack(side=tk.LEFT, padx=10, pady=5)
+        # Create a frame for the split view
+        split_frame = tk.Frame(self.root)
+        split_frame.pack(fill=tk.BOTH, expand=True)
 
-        self.black_pgn_button = tk.Button(self.black_frame, text="Select PGN", command=self.select_black_pgn, width=10)
-        self.black_pgn_button.pack(side=tk.RIGHT, padx=10, pady=5)
+        # Left frame for white analysis
+        left_frame = tk.Frame(split_frame, bg="white")
+        left_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
-        # Action buttons
-        self.action_frame = ttk.Frame(root, padding=10)
-        self.action_frame.pack(fill=tk.X, padx=10, pady=5)
+        self.white_pgn_label = tk.Label(left_frame, text="Select White PGN file", bg="white", fg="black")
+        self.white_pgn_label.pack(pady=5)
+        tk.Button(left_frame, text="Select White PGN", command=self.select_white_pgn, width=20).pack(pady=5)
 
-        self.analyze_button = tk.Button(self.action_frame, text="Analyze", command=self.analyze)
-        self.analyze_button.pack(side=tk.LEFT, padx=5, pady=5)
+        self.tree_white = ttk.Treeview(left_frame, columns=("Opening", "Games", "Win Rate (%)"), show="headings")
+        self.tree_white.heading("Opening", text="Opening")
+        self.tree_white.heading("Games", text="Games")
+        self.tree_white.heading("Win Rate (%)", text="Win Rate (%)")
+        self.tree_white.pack(fill=tk.BOTH, expand=True, pady=10)
 
-        self.filter_button = tk.Button(self.action_frame, text="Most Used Opening", command=self.filter_most_used_openings)
-        self.filter_button.pack(side=tk.LEFT, padx=5, pady=5)
+        # Middle frame as a separator
+        middle_frame = tk.Frame(split_frame, bg="lightgray", width=10)
+        middle_frame.pack(side=tk.LEFT, fill=tk.Y)
 
-        self.save_button = tk.Button(self.action_frame, text="Save to Excel", command=self.save_to_excel, state=tk.DISABLED)
-        self.save_button.pack(side=tk.LEFT, padx=5, pady=5)
+        # Right frame for black analysis
+        right_frame = tk.Frame(split_frame, bg="black")
+        right_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
 
-        # Results TreeView
-        self.result_frame = ttk.LabelFrame(root, text="Results", padding=10)
-        self.result_frame.pack(fill=tk.BOTH, padx=10, pady=5, expand=True)
+        self.black_pgn_label = tk.Label(right_frame, text="Select Black PGN file", bg="black", fg="white")
+        self.black_pgn_label.pack(pady=5)
+        tk.Button(right_frame, text="Select Black PGN", command=self.select_black_pgn, width=20).pack(pady=5)
 
-        self.tree = ttk.Treeview(self.result_frame, columns=("Opening", "Games", "Win Rate (%)"), show='headings', height=15)
-        self.tree.heading("Opening", text="Opening")
-        self.tree.heading("Games", text="Games")
-        self.tree.heading("Win Rate (%)", text="Win Rate (%)")
-        self.tree.pack(fill=tk.BOTH, expand=True)
+        self.tree_black = ttk.Treeview(right_frame, columns=("Opening", "Games", "Win Rate (%)"), show="headings", style="Black.Treeview")
+        self.tree_black.heading("Opening", text="Opening")
+        self.tree_black.heading("Games", text="Games")
+        self.tree_black.heading("Win Rate (%)", text="Win Rate (%)")
+        self.tree_black.pack(fill=tk.BOTH, expand=True, pady=10)
 
-        # Variables to store file paths and analysis
-        self.white_pgn_path = None
-        self.black_pgn_path = None
-        self.white_analysis = None
-        self.black_analysis = None
+        # Add Close button
+        close_button = tk.Button(self.root, text="Close", command=self.root.quit, bg="red", fg="white")
+        close_button.place(relx=1.0, rely=0.0, anchor="ne")
+
+        # Style for black treeview
+        style = ttk.Style()
+        style.configure("Black.Treeview", background="black", foreground="lightgray", fieldbackground="black")
+        style.configure("Black.Treeview.Heading", background="black", foreground="lightgray")
+        style.map("Black.Treeview", foreground=[('selected', 'lightgray')], background=[('selected', 'black')])
+
+    def show_datasets(self):
+        webbrowser.open("https://drive.google.com/drive/folders/1_FWcpYO7noxe5gpb_DLPTKnc2PVimuzu?usp=sharing")
 
     def select_white_pgn(self):
         self.white_pgn_path = filedialog.askopenfilename(filetypes=[("PGN files", "*.pgn")])
-        if self.white_pgn_path:
-            self.white_pgn_label.config(text=f"File: {self.white_pgn_path}")
+        self.white_pgn_label.config(text=self.white_pgn_path)
 
     def select_black_pgn(self):
         self.black_pgn_path = filedialog.askopenfilename(filetypes=[("PGN files", "*.pgn")])
-        if self.black_pgn_path:
-            self.black_pgn_label.config(text=f"File: {self.black_pgn_path}")
+        self.black_pgn_label.config(text=self.black_pgn_path)
+
+    def select_dataset(self):
+        dataset_path = filedialog.askopenfilename(filetypes=[("PGN files", "*.pgn")])
+        if dataset_path:
+            messagebox.showinfo("Dataset Selected", f"Dataset file selected: {dataset_path}")
 
     def analyze(self):
-        if not self.white_pgn_path or not self.black_pgn_path:
+        if not hasattr(self, 'white_pgn_path') or not hasattr(self, 'black_pgn_path'):
             messagebox.showerror("Error", "Please select both White and Black PGN files.")
             return
 
-        white_data = self.process_pgn(self.white_pgn_path)
-        black_data = self.process_pgn(self.black_pgn_path)
+        white_games = self.load_pgn(self.white_pgn_path)
+        black_games = self.load_pgn(self.black_pgn_path)
 
-        if not white_data or not black_data:
-            messagebox.showerror("Error", "Unable to process one or both PGN files.")
-            return
+        self.white_analysis = self.compute_win_rates(white_games, "white")
+        self.black_analysis = self.compute_win_rates(black_games, "black")
 
-        self.white_analysis = self.compute_win_rates(white_data, "white")
-        self.black_analysis = self.compute_win_rates(black_data, "black")
         self.display_results()
-        self.save_button.config(state=tk.NORMAL)
 
-    def process_pgn(self, pgn_path):
-        data = []
-        try:
-            with open(pgn_path, "r") as file:
-                while True:
-                    game = chess.pgn.read_game(file)
-                    if game is None:
-                        break
-                    moves = list(game.mainline_moves())
-                    result = game.headers.get("Result", "*")
-                    data.append((moves, result))
-        except Exception as e:
-            print(f"Error processing PGN file: {e}")
-            return None
-        return data
+    def load_pgn(self, pgn_path):
+        games = []
+        with open(pgn_path) as pgn_file:
+            while True:
+                game = chess.pgn.read_game(pgn_file)
+                if game is None:
+                    break
+                moves = [move.uci() for move in game.mainline_moves()]
+                result = game.headers["Result"]
+                games.append({"Moves": moves, "Result": result})
+        return games
 
     def compute_win_rates(self, data, color):
         openings = {}
-
-        for moves, result in data:
-            if len(moves) < 2:
+        for game in data:
+            if len(game["Moves"]) < 2:
                 continue
-            opening = " ".join([str(moves[0]), str(moves[1])])
+            opening = " ".join([game["Moves"][0][2:], game["Moves"][1][2:]])
             if opening not in openings:
                 openings[opening] = {"games": 0, "wins": 0}
-
             openings[opening]["games"] += 1
-            if (result == "1-0" and color == "white") or (result == "0-1" and color == "black"):
+            if (color == "white" and game["Result"] == "1-0") or (color == "black" and game["Result"] == "0-1"):
                 openings[opening]["wins"] += 1
 
-        result_list = []
+        analysis = []
         for opening, stats in openings.items():
-            games = stats["games"]
-            win_rate = (stats["wins"] / games * 100) if games > 0 else 0
-            result_list.append((opening, games, round(win_rate, 2)))
+            if stats["games"] >= 30:  # Filter to include only openings with 30 or more games
+                win_rate = (stats["wins"] / stats["games"]) * 100
+                analysis.append({"Opening": opening, "Games": stats["games"], "Win Rate (%)": win_rate})
 
-        return result_list
+        return pd.DataFrame(analysis)
 
     def display_results(self):
-        # Clear existing rows
-        for row in self.tree.get_children():
-            self.tree.delete(row)
+        for row in self.tree_white.get_children():
+            self.tree_white.delete(row)
 
-        # Add header for White results
-        self.tree.insert("", tk.END, values=("White:", "", ""), tags=("header",))
-        for entry in self.white_analysis:
-            self.tree.insert("", tk.END, values=entry, tags=("white",))
+        for row in self.tree_black.get_children():
+            self.tree_black.delete(row)
 
-        # Add a separator row
-        self.tree.insert("", tk.END, values=("", "", ""), tags=("separator",))
+        for _, row in self.white_analysis.iterrows():
+            self.tree_white.insert("", tk.END, values=(row["Opening"], row["Games"], row["Win Rate (%)"]))
 
-        # Add header for Black results
-        self.tree.insert("", tk.END, values=("Black:", "", ""), tags=("header",))
-        for entry in self.black_analysis:
-            self.tree.insert("", tk.END, values=entry, tags=("black",))
+        for _, row in self.black_analysis.iterrows():
+            self.tree_black.insert("", tk.END, values=(row["Opening"], row["Games"], row["Win Rate (%)"]))
 
-        # Apply styles
-        self.tree.tag_configure("header", font=("Helvetica", 12, "bold"), background="#f0f0f0")
-        self.tree.tag_configure("white", background="#e6f7ff")
-        self.tree.tag_configure("black", background="#fff3e6")
-        self.tree.tag_configure("separator", background="#ffffff")
+        # Display evaluation
+        white_least_winrate = self.white_analysis.loc[self.white_analysis["Win Rate (%)"].idxmin()]
+        black_least_winrate = self.black_analysis.loc[self.black_analysis["Win Rate (%)"].idxmin()]
 
-    def filter_most_used_openings(self):
-        if not self.white_analysis or not self.black_analysis:
-            messagebox.showerror("Error", "No data to filter. Please analyze first.")
-            return
+        evaluation_text = (
+            f"Hasil Evaluasi:\n"
+            f"Pembukaan Putih yang perlu dipelajari = {white_least_winrate['Opening']} "
+            f"(Win Rate: {white_least_winrate['Win Rate (%)']:.2f}%)\n"
+            f"Pembukaan Hitam yang perlu dipelajari = {black_least_winrate['Opening']} "
+            f"(Win Rate: {black_least_winrate['Win Rate (%)']:.2f}%)"
+        )
+        messagebox.showinfo("Hasil Evaluasi", evaluation_text)
 
-        self.white_analysis = [entry for entry in self.white_analysis if entry[1] >= 30]
-        self.black_analysis = [entry for entry in self.black_analysis if entry[1] >= 30]
+    def show_tutorial(self):
+        tutorial_text = (
+            "Cara Menggunakan Chess Analyzer:\n"
+            "1. Dapatkan file PGN dari permainan catur. \n"
+            "   (Klik tombol 'Dataset' untuk membuka link Google Drive yang berisi dataset PGN yang tersedia untuk diunduh.)\n"
+            "   Atau\n"
+            "   (Anda bisa mendapatkan file PGN pribadi atau orang lain dari situs seperti lichess.com atau chess.com.\n"
+            "   Pergi ke situs openingtree.com dan masukkan nickname Anda untuk menganalisis permainan Anda.\n"
+            "   Setelah analisis selesai, unduh file PGN dari situs tersebut).\n"
+            "2. Klik 'Select White PGN' untuk memilih file PGN permainan Anda sebagai putih.\n"
+            "3. Klik 'Select Black PGN' untuk memilih file PGN permainan Anda sebagai hitam.\n"
+            "4. Setelah kedua file PGN dipilih, klik tombol 'Analyze'.\n"
+            "5. Aplikasi akan menganalisis permainan Anda dan menampilkan hasilnya di tabel.\n"
+            "6. Hasil evaluasi akan menunjukkan pembukaan yang perlu Anda pelajari lebih lanjut berdasarkan win rate.\n"
+        )
+        messagebox.showinfo("Tutorial", tutorial_text)
 
-        self.display_results()
-
-    def save_to_excel(self):
-        if not self.white_analysis or not self.black_analysis:
-            messagebox.showerror("Error", "No data to save.")
-            return
-
-        file_path = filedialog.asksaveasfilename(defaultextension=".xlsx", filetypes=[("Excel files", "*.xlsx")])
-        if not file_path:
-            return
-
-        white_df = pd.DataFrame(self.white_analysis, columns=["Opening", "Games", "Win Rate (%)"])
-        black_df = pd.DataFrame(self.black_analysis, columns=["Opening", "Games", "Win Rate (%)"])
-
-        with pd.ExcelWriter(file_path) as writer:
-            white_df.to_excel(writer, sheet_name="White", index=False)
-            black_df.to_excel(writer, sheet_name="Black", index=False)
-
-        messagebox.showinfo("Success", f"Results saved to {file_path}")
+    def open_dataset_link(self):
+        webbrowser.open("https://drive.google.com/drive/folders/1_FWcpYO7noxe5gpb_DLPTKnc2PVimuzu?usp=sharing")
 
 if __name__ == "__main__":
     root = tk.Tk()
-    app = ChessAnalysisApp(root)
+    app = ChessAnalyzerApp(root)
     root.mainloop()
